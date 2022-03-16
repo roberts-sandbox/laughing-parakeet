@@ -28,7 +28,7 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
-          echo github.event.pull_request.head_ref: ${{ github.event.pull_request.head_ref }}
+          echo github.event.pull_request.head.ref: ${{ github.event.pull_request.head.ref }}
           echo github.pull_request.head_ref: ${{ github.pull_request.head_ref }}
           echo github.head_ref: ${{ github.head_ref }}
           echo github.ref: ${{ github.ref }}
@@ -36,4 +36,4 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head_ref || github.ref || github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref || github.head_ref }}
