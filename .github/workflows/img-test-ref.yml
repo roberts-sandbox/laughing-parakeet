@@ -1,0 +1,57 @@
+name: img test - ref
+
+on:
+  pull_request:
+    paths:
+      - '**/*.png'
+
+jobs:
+  img-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Check out base ref
+        run: git fetch --no-tags --depth=1 origin $GITHUB_BASE_REF
+
+      - name: Install the Optipng package
+        run: sudo apt-get update && sudo apt-get -y install optipng
+
+      - name: Run optipng on new or changed images
+        run: |
+          set -e # exit when any command fails
+
+          echo "$GITHUB_BASE_REF"
+          git checkout $GITHUB_BASE_REF
+
+          echo "$GITHUB_HEAD_REF"
+          git checkout $GITHUB_HEAD_REF
+
+          echo "changed files"
+          git diff --name-only --diff-filter=d $GITHUB_BASE_REF $GITHUB_HEAD_REF
+
+          echo "optipng"
+          git diff --name-only -z --diff-filter=d $GITHUB_BASE_REF $GITHUB_HEAD_REF -- '*.png' | xargs -0 optipng -nx
+
+      - name: commit and push
+        run: |
+          echo "no changes"
+          if [[ !  `git status --porcelain` ]]
+          then
+            echo "No changes"
+            exit 0
+          fi
+
+          echo "commit"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "*.png"
+          git commit --message="Optimize images"
+
+          echo "push"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
